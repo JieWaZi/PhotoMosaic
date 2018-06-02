@@ -10,7 +10,7 @@ public class Test {
     public static void main(String[] args) {
         try {
             ImageUtil.initializeFiles(new File("src/SpiderPicture/"));
-            ImageHandle imageHandle = new ImageHandle(new File("src/input/1.jpg"), new File("src/output/1.jpg"));
+            ImageHandle imageHandle = new ImageHandle("src/input/1.jpg", "src/output/");
             imageHandle.HandleImageConvert();
         } catch (IOException e) {
             e.printStackTrace();

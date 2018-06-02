@@ -6,66 +6,55 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Rider on 2018/5/31.
  */
 public class ImageHandle {
 
-    private File inputImage;
-    private File outputImage;
+    private String inputPath;
+    private String outputPath;
 
-    public ImageHandle(File inputImage, File outputImage) {
-        this.inputImage = inputImage;
-        this.outputImage = outputImage;
+    public ImageHandle(String inputPath, String outputPath) {
+        this.inputPath = inputPath;
+        this.outputPath = outputPath;
     }
 
     public void HandleImageConvert() throws IOException {
-        int block[][] = getBlockGray();
-        BufferedImage outputImage = new BufferedImage(block.length * 30, block[0].length * 30, BufferedImage.TYPE_INT_RGB);
+        int block[][] = ImageUtil.getImageBlock(new File(inputPath));
+        BufferedImage outputImage = new BufferedImage(block.length * 20, block[0].length * 20, BufferedImage.TYPE_INT_RGB);
         Graphics bg = outputImage.getGraphics();
         for (int i = 0; i < block.length; i++) {
             for (int j = 0; j < block[i].length; j++) {
                 int pixel = block[i][j];
+                String s = getSuitImage(pixel);
                 BufferedImage image = ImageIO.read(new File("src/spiderPicture/" + getSuitImage(pixel)));
-                bg.drawImage(image, i * 30, j * 30, 30, 30, null);
+                bg.drawImage(image, i * 20, j * 20, 20, 20, null);
             }
         }
-        ImageIO.write(outputImage, "jpg", new File("src/output/" + System.currentTimeMillis() + ".jpg"));
+        ImageIO.write(outputImage, "jpg", new File(outputPath + System.currentTimeMillis() + ".jpg"));
     }
 
-    public int[][] getBlockGray() {
-        int[][] block = ImageUtil.getImageBlock(inputImage);
-        int[][] gray = new int[block.length][block[0].length];
-        for (int i = 0; i < block.length; i++) {
-            for (int j = 0; j < block[i].length; j++) {
-                int pixel = block[i][j];
-                int r = (pixel & 0xff0000) >> 16;
-                int g = (pixel & 0x00ff00) >> 8;
-                int b = (pixel & 0x0000ff);
-                //此处为将像素值转换为灰度值的方法，存在误差
-                gray[i][j] = (int) (r * 0.3 + g * 0.59 + b * 0.11);
+    private String getSuitImage(int pleix) {
+        Set<Map.Entry<String, int[]>> sets = ImageUtil.ImageMap().entrySet();
+        int[] blockRGB = ImageUtil.getBlockRGB(pleix);
+        int[] imageRGB;
+        String suitImage = "";
+        double minVariance = Double.MAX_VALUE;
+        int i = 0;
+        for (Map.Entry<String, int[]> entry : sets) {
+            imageRGB = entry.getValue();
+            if (getVariance(blockRGB, imageRGB) <= minVariance) {
+                minVariance = getVariance(blockRGB, imageRGB);
+                suitImage = entry.getKey();
             }
         }
-        return gray;
+        return suitImage;
     }
 
-    private String getSuitImage(int gray) {
-        Map<String, Integer> map = ImageUtil.ImageMap();
-        Map.Entry<String, Integer> gt = null, lt = null;
-        for (Map.Entry<String, Integer> entry : map.entrySet()) {
-            if (gray > entry.getValue()) {
-                gt = entry;
-            } else {
-                lt = entry;
-                break;
-            }
-        }
-        if (gt == null || lt == null) {
-            return gt == null ? lt.getKey() : gt.getKey();
-        }
-        return 2 * gray - gt.getValue() - lt.getValue() > 0 ? lt.getKey() : gt.getKey();
+    private double getVariance(int[] a, int[] b) {
+        return Math.sqrt(Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2) + Math.pow(a[2] - b[2], 2));
     }
-
 
 }
