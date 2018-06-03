@@ -1,5 +1,7 @@
 package Spider;
 
+import ImageMosaic.ImageConfig;
+import Manager.ExecutorsManager;
 import TaskRunner.DownloadTaskRunner;
 import TaskRunner.SpiderTaskRunner;
 import org.jsoup.Jsoup;
@@ -10,6 +12,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Rider on 2018/5/31.
@@ -17,6 +20,7 @@ import java.util.List;
 public class Spider {
 
     private String url;
+    public static AtomicInteger atomicInteger = new AtomicInteger(0);
 
     public Spider(String url) {
         this.url = url;
@@ -32,7 +36,7 @@ public class Spider {
     }
 
     public void downloadImage() throws InterruptedException, IOException {
-        System.out.println("开始下载.......");
+        System.out.println("进入新页面，开始下载图片.......");
         String nextPage = null;
         Element body = this.getDocument().body();
         Elements imgs = body.select("ul.portrait_list li a img");
@@ -42,18 +46,17 @@ public class Spider {
         } else if (a.get(a.size() - 1).text().equals("下一页")) {
             nextPage = a.get(a.size() - 1).attr("href");
         } else {
+            System.out.println("网站图片全部爬去完毕");
             ExecutorsManager.getSpiderServiceInstance().shutdown();
             ExecutorsManager.getDownloadImageServiceInstance().shutdown();
             return;
         }
-        SpiderTaskRunner spiderTaskRunner = new SpiderTaskRunner(new Spider("http://www.liqucn.com/bz/" + nextPage));
+        SpiderTaskRunner spiderTaskRunner = new SpiderTaskRunner(new Spider(SpiderTest.URL + nextPage));
         ExecutorsManager.getSpiderServiceInstance().execute(spiderTaskRunner);
         List<String> imageUrls = imageUrl(imgs);
         for (String url : imageUrls) {
             ExecutorsManager.getDownloadImageServiceInstance().execute(new DownloadTaskRunner(url));
         }
-        System.out.println("当前页面图片下载完成，请求下一页");
-
     }
 
     private List<String> imageUrl(Elements elements) {
@@ -62,5 +65,19 @@ public class Spider {
             list.add(img.attr("src"));
         }
         return list;
+    }
+
+    private boolean isSpiderServiceShutDown() {
+        if (ExecutorsManager.getSpiderServiceInstance().isTerminated()) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isDownloadServiceShutDown() {
+        if (ExecutorsManager.getDownloadImageServiceInstance().isTerminated()) {
+            return true;
+        }
+        return false;
     }
 }

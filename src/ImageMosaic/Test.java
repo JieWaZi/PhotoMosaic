@@ -1,6 +1,5 @@
 package ImageMosaic;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -9,8 +8,7 @@ import java.io.IOException;
 public class Test {
     public static void main(String[] args) {
         try {
-            ImageUtil.initializeFiles(new File("src/SpiderPicture/"));
-            ImageHandle imageHandle = new ImageHandle("src/input/1.jpg", "src/output/");
+            ImageHandle imageHandle = new ImageHandle(ImageConfig.INPUT_IMAGE, ImageConfig.OUTPUT_PATH);
             imageHandle.HandleImageConvert();
         } catch (IOException e) {
             e.printStackTrace();
