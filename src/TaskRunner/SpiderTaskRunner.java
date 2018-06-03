@@ -1,6 +1,6 @@
 package TaskRunner;
 
-import Spider.*;
+import Spider.Spider;
 
 import java.io.IOException;
 
@@ -17,14 +17,12 @@ public class SpiderTaskRunner implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("爬虫线程启动，线程Id为：" + Thread.currentThread().getName());
         try {
             spider.downloadImage();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-            ExecutorsManager.getSpiderServiceInstance().shutdown();
         }
     }
 }
