@@ -8,7 +8,7 @@ public class ImageConfig {
     //图片库路径
     public static final String PICTURES = "src/SpiderPicture/";
     //输入的图片路径
-    public static final String INPUT_IMAGE = "src/input/5.jpg";
+    public static final String INPUT_IMAGE = "src/input/6.jpg";
     //输出图片路径
     public static final String OUTPUT_PATH = "src/output/";
     //原图缩小的最小宽度
